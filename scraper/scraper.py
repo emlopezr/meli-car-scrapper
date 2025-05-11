@@ -39,23 +39,3 @@ def scrape_page(page, page_number):
       print(f"• {car.title} - {car.year} - {car.km} - {car.price}")
 
   return results
-
-def compute_scores(cars):
-  """Calculate scores for each car based on price, year, and kilometers."""
-  prices = [car.price for car in cars if car.price > 0]
-  years = [car.year for car in cars if car.year > 0]
-  kms = [car.km for car in cars if car.km > 0]
-
-  min_price, max_price = min(prices), max(prices)
-  min_year, max_year = min(years), max(years)
-  min_km, max_km = min(kms), max(kms)
-
-  for car in cars:
-    norm_price = (car.price - min_price) / (max_price - min_price) if max_price != min_price else 0
-    norm_year = (car.year - min_year) / (max_year - min_year) if max_year != min_year else 0
-    norm_km = (car.km - min_km) / (max_km - min_km) if max_km != min_km else 0
-
-    score = (norm_year * 0.4 + (1 - norm_km) * 0.3 + (1 - norm_price) * 0.3) * 100
-    car.score = round(score, 1)
-
-  return cars

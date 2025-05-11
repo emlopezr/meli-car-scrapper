@@ -2,7 +2,7 @@ from playwright.sync_api import sync_playwright
 import csv
 from scraper.config import *
 from scraper.url_builder import build_url
-from scraper.scraper import scrape_page, compute_scores
+from scraper.scraper import scrape_page
 from scraper.navigator import navigate_to_next_page
 from scraper.exporter import save_to_csv
 from model.car import Car
@@ -74,11 +74,8 @@ def main(append_mode=True):
 
         # Convert set to list for scoring
         cars_list = list(all_cars)
-        cars_with_scores = compute_scores(cars_list)
-        save_to_csv(cars_with_scores, CSV_LIST)
-        print(f"\n✅ Datos guardados en {CSV_LIST} con {len(cars_with_scores)} registros.")
+        save_to_csv(cars_list, CSV_LIST)
+        print(f"\n✅ Datos guardados en {CSV_LIST} con {len(cars_list)} registros.")
         browser.close()
 
-if __name__ == "__main__":
-    # You can change this to False to override the file instead of appending
-    main(append_mode=True)
+if __name__ == "__main__": main()

@@ -1,3 +1,5 @@
+import sys
+
 BASE_URL = "https://carros.mercadolibre.com.co"
 
 REAL_USER_AGENT = (
@@ -7,8 +9,8 @@ REAL_USER_AGENT = (
 
 SEARCH_OPTIONS = {
   "gear": "automatica",
-  "type": "tipo-de-carroceria-suv",
-  "location": "antioquia",
+  "type": "camioneta",
+  # "location": "antioquia",
   "min_year": 2012,
   "max_price": 65000000,
   "has_abs_brakes": True,
@@ -16,7 +18,7 @@ SEARCH_OPTIONS = {
   "has_power_windows": True,
 }
 
-MAX_PAGES = 10
+MAX_PAGES = sys.maxsize  # Maximum integer value
 MIN_WAIT_TIME = 30
 MAX_WAIT_TIME = 60
 
