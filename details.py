@@ -1,9 +1,9 @@
 from playwright.sync_api import sync_playwright
 import csv
 import time
-import re
 import random
 import sys
+import os
 from scraper.config import *
 from scraper.field_priority import ordered_fields
 
@@ -11,9 +11,12 @@ def normalize_number(text):
   """Convert text to number by removing non-digit characters."""
   return int(''.join(c for c in text if c.isdigit())) if text else 0
 
-def read_cars_from_csv(filename):
-    """Read car URLs from the CSV file created in the first stage."""
+def read_cars_from_csv(filename, output_file=None):
+    """Read car URLs from the CSV file created in the first stage and check already processed cars."""
     cars = []
+    processed_urls = set()
+    
+    # Read input file
     with open(filename, mode="r", encoding="utf-8") as file:
         reader = csv.DictReader(file)
         for row in reader:
@@ -24,7 +27,19 @@ def read_cars_from_csv(filename):
                 "Ubicación": row["Ubicación"],
                 "Enlace": row["Enlace"]
             })
-    return cars
+    
+    # Read output file if it exists to get already processed cars
+    if output_file:
+        try:
+            with open(output_file, mode="r", encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if "Enlace" in row:
+                        processed_urls.add(row["Enlace"])
+        except FileNotFoundError:
+            pass  # Output file doesn't exist yet, that's fine
+    
+    return cars, processed_urls
 
 def get_main_image_url(page):
     """Get the main image URL from the car listing."""
@@ -131,33 +146,41 @@ def extract_specs(page):
     
     return specs
 
-def save_to_csv(cars_with_specs, filename):
-    """Save car specifications to a CSV file."""
-    if not cars_with_specs: return
+def save_to_csv(car_data, filename, fieldnames=None):
+    """Save a single car's specifications to a CSV file."""
+    if not car_data:
+        return
     
-    # Get all possible field names from all cars
-    fieldnames = set()
-    for car in cars_with_specs:
-        fieldnames.update(car.keys())
+    # If fieldnames not provided, get them from the car data
+    if not fieldnames:
+        fieldnames = list(car_data.keys())
+        # Sort remaining fields alphabetically
+        remaining_fields = sorted(list(set(fieldnames) - set(ordered_fields)))
+        # Combine priority fields with remaining fields
+        fieldnames = [field for field in ordered_fields if field in fieldnames] + remaining_fields
     
-    # Convert to list and sort remaining fields alphabetically
-    remaining_fields = sorted(list(fieldnames - set(ordered_fields)))
+    # Check if file exists to determine if we need to write header
+    file_exists = os.path.exists(filename)
     
-    # Combine priority fields with remaining fields
-    # Only include priority fields that exist in the data
-    fieldnames = [field for field in ordered_fields if field in fieldnames] + remaining_fields
-    
-    with open(filename, mode="w", newline="", encoding="utf-8") as file:
+    with open(filename, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(cars_with_specs)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow(car_data)
 
 def main():
     input_file = sys.argv[1]
     output_file = sys.argv[2]
     
-    # Read cars from the first stage output
-    cars = read_cars_from_csv(input_file)
+    # Read cars from the first stage output and get already processed URLs
+    cars, processed_urls = read_cars_from_csv(input_file, output_file)
+    
+    # Filter out already processed cars
+    cars = [car for car in cars if car['Enlace'] not in processed_urls]
+    
+    if not cars:
+        print("\n✅ No hay carros nuevos para procesar.")
+        return
     
     # Randomly shuffle the list before processing
     random.shuffle(cars)
@@ -167,10 +190,7 @@ def main():
     MAX_LOAD_TIME = 6
     cars = cars[:MAX_SCRAPE_PAGES]
     
-    print(f"\n🚗 Procesando {len(cars)} carros...")
-    
-    # Initialize list to store processed cars
-    cars_with_specs = []
+    print(f"\n🚗 Procesando {len(cars)} carros nuevos...")
     
     with sync_playwright() as p:
         load_time = random.randint(MIN_LOAD_TIME, MAX_LOAD_TIME)
@@ -189,46 +209,51 @@ def main():
             print(f"\n🔍 Procesando carro {i} de {len(cars)}: {car['Título']}")
             print(f"📎 URL: {car['Enlace']}")
             
-            page.goto(car['Enlace'])
-            time.sleep(load_time)
-            
-            # Get main image URL
-            main_image = get_main_image_url(page)
-            if main_image:
-                print(f"🖼️ Imagen principal: {main_image}")
-            
-            # Extract specifications
-            specs = extract_specs(page)
-            
-            # Combine car info with specs, keeping basic info first
-            car_data = {
-                # Basic info from first stage
-                "Título": car["Título"],
-                "Precio": car["Precio"],
-                "Año": car["Año"],
-                "Ubicación": car["Ubicación"],
-                "Enlace": car["Enlace"],
-                "ImagenURL": main_image,
-                # Additional specs from second stage
-                **specs
-            }
-            cars_with_specs.append(car_data)
-            
-            # Print specifications
-            print("\n📋 Especificaciones:")
-            for name, value in specs.items():
-                print(f"{name}: {value}")
-            
-            # Random delay between cars (10-20 seconds)
-            if i < len(cars):  # Don't delay after the last car
-                delay = random.randint(MIN_WAIT_TIME, MAX_WAIT_TIME)
-                print(f"\n⏳ Esperando {delay} segundos...")
-                time.sleep(delay)
-        
-        # Save all data to CSV
-        save_to_csv(cars_with_specs, output_file)
-        print(f"\n✅ Datos guardados en {output_file}")
+            try:
+                page.goto(car['Enlace'])
+                time.sleep(load_time)
+                
+                # Get main image URL
+                main_image = get_main_image_url(page)
+                if main_image:
+                    print(f"🖼️ Imagen principal: {main_image}")
+                
+                # Extract specifications
+                specs = extract_specs(page)
+                
+                # Combine car info with specs, keeping basic info first
+                car_data = {
+                    # Basic info from first stage
+                    "Título": car["Título"],
+                    "Precio": car["Precio"],
+                    "Año": car["Año"],
+                    "Ubicación": car["Ubicación"],
+                    "Enlace": car["Enlace"],
+                    "ImagenURL": main_image,
+                    # Additional specs from second stage
+                    **specs
+                }
+                
+                # Save car data immediately
+                save_to_csv(car_data, output_file)
+                print("✅ Carro guardado exitosamente")
+                
+                # Print specifications
+                print("\n📋 Especificaciones:")
+                for name, value in specs.items():
+                    print(f"{name}: {value}")
+                
+                # Random delay between cars (10-20 seconds)
+                if i < len(cars):  # Don't delay after the last car
+                    delay = random.randint(MIN_WAIT_TIME, MAX_WAIT_TIME)
+                    print(f"\n⏳ Esperando {delay} segundos...")
+                    time.sleep(delay)
+                    
+            except Exception as e:
+                print(f"❌ Error procesando carro {car['Enlace']}: {str(e)}")
+                continue
         
         browser.close()
+        print(f"\n✅ Proceso completado. Datos guardados en {output_file}")
 
 if __name__ == "__main__": main() 
