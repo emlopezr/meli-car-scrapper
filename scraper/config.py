@@ -5,9 +5,9 @@ REAL_USER_AGENT = (
   "Chrome/124.0.6367.61 Safari/537.36"
 )
 
-DEFAULT_OPTIONS = {
+SEARCH_OPTIONS = {
   "gear": "automatica",
-  "type": "camioneta",
+  "type": "tipo-de-carroceria-suv",
   "location": "antioquia",
   "min_year": 2012,
   "max_price": 65000000,
@@ -17,7 +17,8 @@ DEFAULT_OPTIONS = {
 }
 
 MAX_PAGES = 10
-MIN_WAIT_TIME = 20
-MAX_WAIT_TIME = 40
+MIN_WAIT_TIME = 30
+MAX_WAIT_TIME = 60
 
-OUTPUT_FILE = "output.csv"
+CSV_LIST = "output_list.csv"
+CSV_DETAILS = "output_details.csv"
