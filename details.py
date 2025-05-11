@@ -1,15 +1,12 @@
 from playwright.sync_api import sync_playwright
+from scraper.field_priority import ordered_fields
+from scraper.utils import normalize_number
+from scraper.config import *
 import csv
 import time
 import random
 import sys
 import os
-from scraper.config import *
-from scraper.field_priority import ordered_fields
-
-def normalize_number(text):
-  """Convert text to number by removing non-digit characters."""
-  return int(''.join(c for c in text if c.isdigit())) if text else 0
 
 def read_cars_from_csv(filename, output_file=None):
     """Read car URLs from the CSV file created in the first stage and check already processed cars."""
@@ -195,7 +192,7 @@ def main():
     with sync_playwright() as p:
         load_time = random.randint(MIN_LOAD_TIME, MAX_LOAD_TIME)
         browser = p.chromium.launch(headless=False)
-        context = browser.new_context(user_agent=REAL_USER_AGENT, locale="es-CO")
+        context = browser.new_context(user_agent=USER_AGENT, locale="es-CO")
         page = context.new_page()
 
         # First visit the last car to initialize the structure
@@ -207,7 +204,7 @@ def main():
         # Process each car
         for i, car in enumerate(cars, 1):
             print(f"\n🔍 Procesando carro {i} de {len(cars)}: {car['Título']}")
-            print(f"📎 URL: {car['Enlace']}")
+            print(f"📎 URL: {car['Enlace'].split('-_JM')[0]}")
             
             try:
                 page.goto(car['Enlace'])

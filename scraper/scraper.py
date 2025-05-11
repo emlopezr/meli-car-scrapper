@@ -1,8 +1,5 @@
 from model.car import Car
-
-def normalize_number(text):
-  """Convert text to number by removing non-digit characters."""
-  return int(''.join(c for c in text if c.isdigit())) if text else 0
+from utils import normalize_number
 
 def extract_car_data(item):
   """Extract data from a single car listing item."""

@@ -1,82 +1,84 @@
 from playwright.sync_api import sync_playwright
 import csv
+import sys
 from scraper.config import *
 from scraper.url_builder import build_url
 from scraper.scraper import scrape_page
 from scraper.navigator import navigate_to_next_page
-from scraper.exporter import save_to_csv
-from model.car import Car
+from scraper.exporter import save_to_csv, read_existing_cars
 
-def read_existing_cars(filename):
-    """Read existing cars from CSV file."""
-    cars = set()
+def setup_browser():
+  """Initialize and return browser context."""
+  playwright = sync_playwright().start()
+  browser = playwright.chromium.launch(headless=False)
+  context = browser.new_context(user_agent=USER_AGENT, locale="es-CO")
+  page = context.new_page()
+
+  return playwright, browser, page
+
+def load_existing_cars(output_file, append_mode):
+  """Load existing cars if in append mode."""
+  existing_cars = read_existing_cars(output_file) if append_mode else set()
+
+  print(f"\n📊 Modo: {'Añadir' if append_mode else 'Sobrescribir'}")
+  if append_mode: print(f"📄 Carros existentes: {len(existing_cars)}")
+
+  return existing_cars
+
+def scrape_cars(page, initial_url):
+  """Scrape cars from all available pages."""
+  new_cars = set()
+  current_page = 1
+  
+  page.goto(initial_url)
+
+  while current_page <= MAX_SCRAPE_PAGES:
     try:
-        with open(filename, mode="r", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                car = Car(
-                    title=row["Título"],
-                    price=int(row["Precio"]),
-                    year=int(row["Año"]),
-                    km=int(row["Kilometraje"]),
-                    link=row["Enlace"],
-                    location=row["Ubicación"]
-                )
-                cars.add(car)
-    except FileNotFoundError:
-        print("📄 No se encontró archivo existente, se creará uno nuevo.")
-    return cars
+      cars = scrape_page(page, current_page)
+      new_cars.update(cars)
 
-def main(append_mode=True):
-    initial_url = build_url(SEARCH_OPTIONS)
-    print(initial_url)
-    file = sys.argv[1]
+      if not navigate_to_next_page(page, MIN_WAIT_TIME, MAX_WAIT_TIME):
+        print("🚫 No hay más páginas.")
+        break
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context(user_agent=REAL_USER_AGENT, locale="es-CO")
-        page = context.new_page()
+      current_page += 1
 
-        # Get existing cars if in append mode
-        existing_cars = read_existing_cars(file) if append_mode else set()
-        print(f"\n📊 Modo: {'Añadir' if append_mode else 'Sobrescribir'}")
-        if append_mode:
-            print(f"📄 Carros existentes: {len(existing_cars)}")
+    except Exception as e:
+      print(f"❌ Error en la página {current_page}: {e}")
+      break
 
-        # Scrape new cars
-        new_cars = set()  # Using a set to automatically handle duplicates
-        page.goto(initial_url)
-        current_page = 1
+  return new_cars
 
-        while current_page <= MAX_SCRAPE_PAGES:
-            try:
-                cars = scrape_page(page, current_page)
-                new_cars.update(cars)
+def process_results(existing_cars, new_cars, append_mode):
+  """Process and combine results based on mode."""
+  if append_mode:
+    all_cars = existing_cars.union(new_cars)
+    print(f"🆕 Carros nuevos encontrados: {len(new_cars)}")
+    print(f"📈 Carros duplicados ignorados: {len(existing_cars) + len(new_cars) - len(all_cars)}")
 
-                if not navigate_to_next_page(page, MIN_WAIT_TIME, MAX_WAIT_TIME):
-                    print("🚫 No hay más páginas.")
-                    break
+  else:
+    all_cars = new_cars
+    print(f"🆕 Carros encontrados: {len(new_cars)}")
+  
+  return list(all_cars)
 
-                current_page += 1
+def main(append_mode = True):
+  """Main function to scrape and save car listings."""
+  initial_url = build_url(SEARCH_OPTIONS)
+  output_file = sys.argv[1]
 
-            except Exception as e:
-                print(f"❌ Error en la página {current_page}: {e}")
-                break
+  playwright, browser, page = setup_browser()
+  
+  try:
+    existing_cars = load_existing_cars(output_file, append_mode)
+    new_cars = scrape_cars(page, initial_url)
+    cars_list = process_results(existing_cars, new_cars, append_mode)
+    save_to_csv(cars_list, output_file)
 
-        # Combine cars based on mode
-        if append_mode:
-            # Add new cars to existing ones (duplicates will be automatically handled)
-            all_cars = existing_cars.union(new_cars)
-            print(f"🆕 Carros nuevos encontrados: {len(new_cars)}")
-            print(f"📈 Carros duplicados ignorados: {len(existing_cars) + len(new_cars) - len(all_cars)}")
-        else:
-            all_cars = new_cars
-            print(f"🆕 Carros encontrados: {len(new_cars)}")
+    print(f"\n✅ Datos guardados en {output_file} con {len(cars_list)} registros.")
 
-        # Convert set to list for scoring
-        cars_list = list(all_cars)
-        save_to_csv(cars_list, file)
-        print(f"\n✅ Datos guardados en {file} con {len(cars_list)} registros.")
-        browser.close()
+  finally:
+    browser.close()
+    playwright.stop()
 
 if __name__ == "__main__": main()
