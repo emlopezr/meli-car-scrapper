@@ -151,16 +151,16 @@ def save_to_csv(car_data, filename, fieldnames=None):
     if not car_data:
         return
     
-    # If fieldnames not provided, get them from the car data
-    if not fieldnames:
-        fieldnames = list(car_data.keys())
-        # Sort remaining fields alphabetically
-        remaining_fields = sorted(list(set(fieldnames) - set(ordered_fields)))
-        # Combine priority fields with remaining fields
-        fieldnames = [field for field in ordered_fields if field in fieldnames] + remaining_fields
+    # Always use ordered_fields as the base fieldnames
+    fieldnames = ordered_fields
     
     # Check if file exists to determine if we need to write header
     file_exists = os.path.exists(filename)
+    
+    # Ensure all fields from ordered_fields are present in car_data
+    for field in fieldnames:
+        if field not in car_data:
+            car_data[field] = ""
     
     with open(filename, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
