@@ -5,7 +5,7 @@ import re
 import random
 import sys
 from scraper.config import *
-from scraper.field_priority import priority_fields
+from scraper.field_priority import ordered_fields
 
 def normalize_number(text):
   """Convert text to number by removing non-digit characters."""
@@ -141,11 +141,11 @@ def save_to_csv(cars_with_specs, filename):
         fieldnames.update(car.keys())
     
     # Convert to list and sort remaining fields alphabetically
-    remaining_fields = sorted(list(fieldnames - set(priority_fields)))
+    remaining_fields = sorted(list(fieldnames - set(ordered_fields)))
     
     # Combine priority fields with remaining fields
     # Only include priority fields that exist in the data
-    fieldnames = [field for field in priority_fields if field in fieldnames] + remaining_fields
+    fieldnames = [field for field in ordered_fields if field in fieldnames] + remaining_fields
     
     with open(filename, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
