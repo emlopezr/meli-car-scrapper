@@ -28,8 +28,9 @@ def read_existing_cars(filename):
     return cars
 
 def main(append_mode=True):
-    INITIAL_URL = build_url(SEARCH_OPTIONS)
-    print(INITIAL_URL)
+    initial_url = build_url(SEARCH_OPTIONS)
+    print(initial_url)
+    file = sys.argv[1]
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
@@ -37,17 +38,17 @@ def main(append_mode=True):
         page = context.new_page()
 
         # Get existing cars if in append mode
-        existing_cars = read_existing_cars(CSV_LIST) if append_mode else set()
+        existing_cars = read_existing_cars(file) if append_mode else set()
         print(f"\n📊 Modo: {'Añadir' if append_mode else 'Sobrescribir'}")
         if append_mode:
             print(f"📄 Carros existentes: {len(existing_cars)}")
 
         # Scrape new cars
         new_cars = set()  # Using a set to automatically handle duplicates
-        page.goto(INITIAL_URL)
+        page.goto(initial_url)
         current_page = 1
 
-        while current_page <= MAX_PAGES:
+        while current_page <= MAX_SCRAPE_PAGES:
             try:
                 cars = scrape_page(page, current_page)
                 new_cars.update(cars)
@@ -74,8 +75,8 @@ def main(append_mode=True):
 
         # Convert set to list for scoring
         cars_list = list(all_cars)
-        save_to_csv(cars_list, CSV_LIST)
-        print(f"\n✅ Datos guardados en {CSV_LIST} con {len(cars_list)} registros.")
+        save_to_csv(cars_list, file)
+        print(f"\n✅ Datos guardados en {file} con {len(cars_list)} registros.")
         browser.close()
 
 if __name__ == "__main__": main()

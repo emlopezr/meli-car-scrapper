@@ -153,15 +153,19 @@ def save_to_csv(cars_with_specs, filename):
         writer.writerows(cars_with_specs)
 
 def main():
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+    
     # Read cars from the first stage output
-    cars = read_cars_from_csv(CSV_LIST)
+    cars = read_cars_from_csv(input_file)
     
     # Randomly shuffle the list before processing
     random.shuffle(cars)
     
     # Limit the number of cars to process
-    MAX_CARS = sys.maxsize  # Maximum integer value
-    cars = cars[:MAX_CARS]
+    MIN_LOAD_TIME = 3
+    MAX_LOAD_TIME = 6
+    cars = cars[:MAX_SCRAPE_PAGES]
     
     print(f"\n🚗 Procesando {len(cars)} carros...")
     
@@ -169,6 +173,7 @@ def main():
     cars_with_specs = []
     
     with sync_playwright() as p:
+        load_time = random.randint(MIN_LOAD_TIME, MAX_LOAD_TIME)
         browser = p.chromium.launch(headless=False)
         context = browser.new_context(user_agent=REAL_USER_AGENT, locale="es-CO")
         page = context.new_page()
@@ -177,7 +182,7 @@ def main():
         if len(cars) > 1:
             last_car = cars[-1]
             page.goto(last_car['Enlace'])
-            time.sleep(random.randint(4,8))  # Wait for the page to fully load
+            time.sleep(load_time)
 
         # Process each car
         for i, car in enumerate(cars, 1):
@@ -185,7 +190,7 @@ def main():
             print(f"📎 URL: {car['Enlace']}")
             
             page.goto(car['Enlace'])
-            time.sleep(random.randint(2,5))  # Wait for the page to load
+            time.sleep(load_time)
             
             # Get main image URL
             main_image = get_main_image_url(page)
@@ -216,13 +221,13 @@ def main():
             
             # Random delay between cars (10-20 seconds)
             if i < len(cars):  # Don't delay after the last car
-                delay = random.randint(10, 20)
+                delay = random.randint(MIN_WAIT_TIME, MAX_WAIT_TIME)
                 print(f"\n⏳ Esperando {delay} segundos...")
                 time.sleep(delay)
         
         # Save all data to CSV
-        save_to_csv(cars_with_specs, CSV_DETAILS)
-        print(f"\n✅ Datos guardados en {CSV_DETAILS}")
+        save_to_csv(cars_with_specs, output_file)
+        print(f"\n✅ Datos guardados en {output_file}")
         
         browser.close()
 

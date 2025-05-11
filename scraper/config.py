@@ -18,9 +18,6 @@ SEARCH_OPTIONS = {
   "has_power_windows": True,
 }
 
-MAX_PAGES = sys.maxsize  # Maximum integer value
-MIN_WAIT_TIME = 30
-MAX_WAIT_TIME = 60
-
-CSV_LIST = "output_list.csv"
-CSV_DETAILS = "output_details.csv"
+MAX_SCRAPE_PAGES = sys.maxsize
+MIN_WAIT_TIME = 15
+MAX_WAIT_TIME = 30
