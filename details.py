@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
-from car_list.constants import FIELD_PRIORITY
+from utils.constants import FIELD_PRIORITY
 from utils.string_utils import normalize_number
-from car_list.config import get_scraping_config
+from utils.config import get_scraping_config
 import csv
 import time
 import random

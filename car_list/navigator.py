@@ -1,6 +1,6 @@
 import random
 import time
-from .config import get_scraping_config
+from utils.config import get_scraping_config
 
 def scroll_to_bottom(page):
   """Scroll to bottom of page to load all content."""

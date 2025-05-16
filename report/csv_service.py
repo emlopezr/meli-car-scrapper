@@ -1,6 +1,6 @@
 import csv
 from models.car import Car
-from car_list.constants import FIELD_PRIORITY
+from utils.constants import FIELD_PRIORITY
 
 def read_cars_from_csv(filename):
   """Read cars from the CSV file."""

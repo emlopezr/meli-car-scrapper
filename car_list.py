@@ -3,7 +3,7 @@ from car_list.browser import setup_browser, close_browser
 from car_list.scraper import scrape_cars
 from car_list.data import load_existing_cars, process_results, save_results
 from car_list.url_builder import build_url
-from car_list.config import get_scraping_config
+from utils.config import get_scraping_config
 
 def main(append_mode=True):
   """Main function to scrape and save car listings."""

@@ -1,4 +1,4 @@
-from .config import get_scraping_config
+from utils.config import get_scraping_config
 
 URL_FILTER_ABS_BRAKES = "con-frenos-abs"
 URL_FILTER_AIR_CONDITIONING = "con-aire-acondicionado"

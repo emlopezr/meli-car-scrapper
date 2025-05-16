@@ -1,5 +1,5 @@
 from playwright.sync_api import sync_playwright
-from .config import get_browser_config
+from utils.config import get_browser_config
 
 def setup_browser():
   """Initialize and return browser context."""

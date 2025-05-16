@@ -1,5 +1,5 @@
 from models.car import Car
-from .config import get_scraping_config
+from utils.config import get_scraping_config
 from .navigator import navigate_to_next_page
 
 def extract_car_data(item):

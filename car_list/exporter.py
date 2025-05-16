@@ -1,7 +1,7 @@
 import csv
 from models.car import Car
 from utils.string_utils import parse_price
-from .constants import CSV_FIELDNAMES, COLUMN_TITLE, COLUMN_PRICE, COLUMN_LINK
+from utils.constants import CSV_FIELDNAMES, COLUMN_TITLE, COLUMN_PRICE, COLUMN_LINK
 
 def read_existing_cars(filename):
   """Read existing cars from CSV file."""
