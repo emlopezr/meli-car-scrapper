@@ -5,10 +5,10 @@ class Car:
   """Core Car model representing a vehicle."""
   title: str
   price: str
-  year: str
-  km: str
   link: str
-  location: str
+  year: str = 0
+  km: str = 0
+  location: str = None
   score: int = 0
   engine: str = None
 

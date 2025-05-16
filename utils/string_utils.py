@@ -2,6 +2,10 @@ def clean_numeric_string(value: str) -> str:
   """Clean a numeric string by removing non-numeric characters."""
   return ''.join(c for c in value if c.isdigit() or c == '.')
 
+def normalize_number(text):
+  """Convert text to number by removing non-digit characters."""
+  return int(''.join(c for c in text if c.isdigit())) if text else 0
+
 def parse_price(price_str: str) -> float:
   """Parse price string to float value."""
   price_str = price_str.replace('.', '').replace(',', '').replace('$', '').strip().lower()

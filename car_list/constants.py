@@ -1,10 +1,21 @@
-ordered_fields = [
-    # Prioridad alta (ya tenías)
-    "ImagenURL",
-    "Precio",
-    "Score",
-    "Título",
+"""Constants for the car_list module."""
+
+# CSV Column names
+COLUMN_TITLE = "Título"
+COLUMN_PRICE = "Precio"
+COLUMN_LINK = "Enlace"
+
+# CSV fieldnames in order
+CSV_FIELDNAMES = [COLUMN_TITLE, COLUMN_PRICE, COLUMN_LINK]
+
+# Field priority order for car attributes
+FIELD_PRIORITY = [
+    # High priority fields
     "Enlace",
+    "ImagenURL",
+    "Título",
+    "Score",
+    "Precio",
     "Marca",
     "Modelo",
     "Versión",
@@ -23,14 +34,14 @@ ordered_fields = [
     "Transmisión",
     "Ubicación",
 
-    # Seguridad y características funcionales
+    # Safety and functional features
     "Airbag conductor",
     "Airbag para conductor y pasajero",
     "Frenos ABS",
     "Control de estabilidad",
     "Cierre centralizado de puertas",
     "Vidrios eléctricos",
-    "Cierre automático de vidrios" ,
+    "Cierre automático de vidrios",
     "Desempañador trasero",
     "Aire acondicionado",
     "Climatizador",
@@ -38,9 +49,9 @@ ordered_fields = [
     "Sensor de lluvia",
     "Con cámara de reversa",
     "Computadora de abordo",
-    "Blindado", 
+    "Blindado",
 
-    # Multimedia y conectividad
+    # Multimedia and connectivity
     "Bluetooth",
     "CD",
     "AM/FM",
@@ -50,7 +61,7 @@ ordered_fields = [
     "DVD",
     "Comando remoto para radio en el volante",
 
-    # Extras y confort
+    # Extras and comfort
     "Techo corredizo",
     "Tapizado de cuero",
     "Tercera luz de freno led",
@@ -68,22 +79,22 @@ ordered_fields = [
     "Defensa delantera",
     "Sistema ISOFIX",
 
-    # Garantías y condiciones comerciales
+    # Warranties and commercial conditions
     "Con garantía de fábrica",
     "Con garantía mecánica",
     "Con precio negociable",
     "Venpermuta",
     "Único dueño",
 
-    # Técnicos complementarios
+    # Technical complements
     "Distancia entre ejes",
     "Largo x Ancho",
     "Largo x Altura x Ancho",
     "Válvulas por cilindro",
     "Último dígito de la placa",
     "Paridad de la placa",
-    
-    # Eléctrico
+
+    # Electric
     "Autonomia de la batería",
     "Capacidad de la batería",
     "Tipo de batería",

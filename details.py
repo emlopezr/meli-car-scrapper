@@ -1,7 +1,7 @@
 from playwright.sync_api import sync_playwright
-from scraper.field_priority import ordered_fields
-from scraper.utils import normalize_number
-from scraper.config import *
+from car_list.constants import FIELD_PRIORITY
+from utils.string_utils import normalize_number
+from car_list.config import get_scraping_config
 import csv
 import time
 import random
@@ -148,13 +148,13 @@ def save_to_csv(car_data, filename, fieldnames=None):
     if not car_data:
         return
     
-    # Always use ordered_fields as the base fieldnames
-    fieldnames = ordered_fields
+    # Always use FIELD_PRIORITY as the base fieldnames
+    fieldnames = FIELD_PRIORITY
     
     # Check if file exists to determine if we need to write header
     file_exists = os.path.exists(filename)
     
-    # Ensure all fields from ordered_fields are present in car_data
+    # Ensure all fields from FIELD_PRIORITY are present in car_data
     for field in fieldnames:
         if field not in car_data:
             car_data[field] = ""
@@ -182,17 +182,24 @@ def main():
     # Randomly shuffle the list before processing
     random.shuffle(cars)
     
+    # Get config
+    config = get_scraping_config()
+    max_cars = config['max_pages']
+    min_wait = config['min_wait_time']
+    max_wait = config['max_wait_time']
+    user_agent = config['browser']['user_agent']
+    
     # Limit the number of cars to process
     MIN_LOAD_TIME = 3
     MAX_LOAD_TIME = 6
-    cars = cars[:MAX_SCRAPE_PAGES]
+    cars = cars[:max_cars]
     
     print(f"\n🚗 Procesando {len(cars)} carros nuevos...")
     
     with sync_playwright() as p:
         load_time = random.randint(MIN_LOAD_TIME, MAX_LOAD_TIME)
         browser = p.chromium.launch(headless=False)
-        context = browser.new_context(user_agent=USER_AGENT, locale="es-CO")
+        context = browser.new_context(user_agent=user_agent, locale="es-CO")
         page = context.new_page()
 
         # First visit the last car to initialize the structure
@@ -240,9 +247,9 @@ def main():
                 for name, value in specs.items():
                     print(f"{name}: {value}")
                 
-                # Random delay between cars (10-20 seconds)
+                # Random delay between cars
                 if i < len(cars):  # Don't delay after the last car
-                    delay = random.randint(MIN_WAIT_TIME, MAX_WAIT_TIME)
+                    delay = random.randint(min_wait, max_wait)
                     print(f"\n⏳ Esperando {delay} segundos...")
                     time.sleep(delay)
                     

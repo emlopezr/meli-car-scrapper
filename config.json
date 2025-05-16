@@ -1,0 +1,32 @@
+{
+  "browser": {
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.61 Safari/537.36",
+    "locale": "es-CO",
+    "headless": false
+  },
+  "scraping": {
+    "max_pages": 5,
+    "min_wait_time": 10,
+    "max_wait_time": 20,
+    "base_url": "https://carros.mercadolibre.com.co",
+    "search_options": {
+      "gear": "automatica",
+      "min_year": 2012,
+      "max_price": 65000000,
+      "has_abs_brakes": true,
+      "has_air_conditioning": null,
+      "has_power_windows": null,
+      "type": null,
+      "location": null
+    },
+    "option_values": {
+      "gear": {
+        "automatic": "automatica"
+      },
+      "type": {
+        "suv": "tipo-de-carroceria-suv",
+        "camioneta": "camioneta"
+      }
+    }
+  }
+} 

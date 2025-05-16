@@ -1,6 +1,6 @@
 import csv
 from models.car import Car
-from scraper.field_priority import ordered_fields
+from car_list.constants import FIELD_PRIORITY
 
 def read_cars_from_csv(filename):
   """Read cars from the CSV file."""
@@ -29,8 +29,8 @@ def get_fieldnames(cars):
   for car in cars:
     fieldnames.update(car.__dict__.keys())
 
-  remaining_fields = sorted(list(fieldnames - set(ordered_fields)))
-  return [field for field in ordered_fields if field in fieldnames] + remaining_fields
+  remaining_fields = sorted(list(fieldnames - set(FIELD_PRIORITY)))
+  return [field for field in FIELD_PRIORITY if field in fieldnames] + remaining_fields
 
 def save_to_csv(cars, filename):
   """Save cars to CSV with sorted columns."""
