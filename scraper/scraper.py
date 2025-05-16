@@ -1,5 +1,5 @@
 from model.car import Car
-from utils import normalize_number
+from .utils import normalize_number
 
 def extract_car_data(item):
   """Extract data from a single car listing item."""

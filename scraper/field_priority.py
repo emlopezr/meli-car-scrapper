@@ -77,6 +77,7 @@ ordered_fields = [
 
     # Técnicos complementarios
     "Distancia entre ejes",
+    "Largo x Ancho",
     "Largo x Altura x Ancho",
     "Válvulas por cilindro",
     "Último dígito de la placa",
