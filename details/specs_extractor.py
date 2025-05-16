@@ -4,7 +4,7 @@ from utils.string_utils import normalize_number
 def extract_specs(page):
   """Extract detailed specifications from the car page."""
   specs = {}
-  
+
   # First get the main specifications table
   main_table = page.locator("#technical_specifications .ui-pdp-specs__table")
   if main_table.is_visible():
@@ -12,7 +12,7 @@ def extract_specs(page):
     for row in rows:
       name = row.locator(".andes-table__header__container").inner_text()
       value = row.locator(".andes-table__column--value").inner_text()
-      
+
       # Normalize numbers for specific fields
       if name in ["Año", "Kilómetros"]:
         value = normalize_number(value)
@@ -22,9 +22,9 @@ def extract_specs(page):
           value = str(int(normalize_number(value)) / 10)
         except:
           pass
-      
+
       specs[name] = value
-  
+ 
   # Try to click the expand button to get more specs
   try:
     expand_button = page.locator("#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
