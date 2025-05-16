@@ -1,7 +1,6 @@
 import sys
 from report.csv_service import read_cars_from_csv, save_to_csv
 from report.scoring import calculate_car_score
-from models.car import Car
 
 def process_cars(cars):
   """Process cars by calculating their scores."""

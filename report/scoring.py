@@ -1,6 +1,6 @@
 from models.car import Car
 from utils.string_utils import clean_numeric_string, parse_price, parse_engine_size
-from utils.config import PRICE_RANGES, YEAR_RANGES, KILOMETER_RANGES, ENGINE_RANGES
+from report.ranges import PRICE_RANGES, YEAR_RANGES, KILOMETER_RANGES, ENGINE_RANGES
 
 def calculate_range_score(value, ranges):
   """Calculate score based on value ranges."""

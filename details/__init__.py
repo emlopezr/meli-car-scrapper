@@ -1,0 +1,1 @@
+"""Car details scraping module."""

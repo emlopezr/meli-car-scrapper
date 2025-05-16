@@ -1,263 +1,113 @@
-from playwright.sync_api import sync_playwright
-from utils.constants import FIELD_PRIORITY
-from utils.string_utils import normalize_number
-from utils.config import get_scraping_config
-import csv
-import time
-import random
 import sys
+import random
+import time
+from utils.config import get_scraping_config
+from details.car_reader import read_cars_from_csv, filter_processed_cars
+from details.image_extractor import get_main_image_url
+from details.specs_extractor import extract_specs
+from details.csv_writer import save_to_csv
+from details.browser_manager import create_browser_context, load_page
+import csv
 import os
 
-def read_cars_from_csv(filename, output_file=None):
-    """Read car URLs from the CSV file created in the first stage and check already processed cars."""
-    cars = []
-    processed_urls = set()
+def process_car(page, car, load_time):
+  """Process a single car listing."""
+  print(f"\n🔍 Procesando carro: {car['Título']}")
+  print(f"📎 URL: {car['Enlace'].split('-_JM')[0]}")
+  
+  try:
+    page.goto(car['Enlace'])
+    time.sleep(load_time)
     
-    # Read input file
-    with open(filename, mode="r", encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            cars.append({
-                "Título": row["Título"],
-                "Precio": row["Precio"],
-                "Año": row["Año"],
-                "Ubicación": row["Ubicación"],
-                "Enlace": row["Enlace"]
-            })
+    # Get main image URL
+    main_image = get_main_image_url(page)
+    if main_image:
+      print(f"🖼️ Imagen principal: {main_image}")
     
-    # Read output file if it exists to get already processed cars
-    if output_file:
-        try:
-            with open(output_file, mode="r", encoding="utf-8") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if "Enlace" in row:
-                        processed_urls.add(row["Enlace"])
-        except FileNotFoundError:
-            pass  # Output file doesn't exist yet, that's fine
+    # Extract specifications
+    specs = extract_specs(page)
     
-    return cars, processed_urls
-
-def get_main_image_url(page):
-    """Get the main image URL from the car listing."""
-    try:
-        # Get all image elements in the gallery
-        images = page.locator("#gallery .ui-pdp-gallery__figure__image").all()
-        
-        # Find the first image that is not a video (doesn't have a video overlay)
-        for img in images:
-            # Check if the image's parent doesn't have a video overlay
-            parent = img.locator("xpath=..")
-            if not parent.locator(".clip-wrapper").is_visible():
-                # Get the high-resolution image URL from data-zoom attribute
-                img_url = img.get_attribute("data-zoom")
-                if img_url:
-                    return img_url
-                
-                # Fallback to src attribute if data-zoom is not available
-                img_url = img.get_attribute("src")
-                if img_url and not img_url.startswith("data:"):
-                    return img_url
-        
-        return None
-    except Exception as e:
-        print(f"⚠️ Error getting main image: {e}")
-        return None
-
-def extract_specs(page):
-    """Extract detailed specifications from the car page."""
-    specs = {}
+    # Combine car info with specs
+    car_data = {
+      "Título": car["Título"],
+      "Precio": car["Precio"],
+      "Enlace": car["Enlace"],
+      "Año": 0,
+      "Ubicación": "TO-DO",
+      "ImagenURL": main_image,
+      **specs
+    }
     
-    # First get the main specifications table
-    main_table = page.locator("#technical_specifications .ui-pdp-specs__table")
-    if main_table.is_visible():
-        rows = main_table.locator(".andes-table__row").all()
-        for row in rows:
-            name = row.locator(".andes-table__header__container").inner_text()
-            value = row.locator(".andes-table__column--value").inner_text()
-            
-            # Normalize numbers for specific fields
-            if name in ["Año", "Kilómetros"]:
-                value = normalize_number(value)
-            elif name == "Motor":
-                # Divide Motor value by 10
-                try:
-                    value = str(int(normalize_number(value)) / 10)
-                except:
-                    pass
-            
-            specs[name] = value
+    return car_data
     
-    # Try to click the expand button to get more specs
-    try:
-        expand_button = page.locator("#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
-        if expand_button.is_visible():
-            # Smooth scroll to the button
-            page.evaluate("""(selector) => {
-                const element = document.querySelector(selector);
-                if (element) {
-                    element.scrollIntoView({ 
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }""", "#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
-            
-            time.sleep(2)  # Wait for smooth scroll to complete
-            
-            # Try clicking with JavaScript as a fallback
-            try:
-                expand_button.click()
-            except:
-                page.evaluate("""(selector) => {
-                    const button = document.querySelector(selector);
-                    if (button) button.click();
-                }""", "#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
-            
-            time.sleep(2)  # Wait for the expanded content
-            
-            # Get all specification tables
-            tables_container = page.locator("#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > div > div")
-            
-            # Iterate through all tables
-            tables = tables_container.locator("div > div > table").all()
-            for table in tables:
-                rows = table.locator(".andes-table__row").all()
-                for row in rows:
-                    name = row.locator(".andes-table__header__container").inner_text()
-                    value = row.locator(".andes-table__column--value").inner_text()
-                    
-                    # Normalize numbers for specific fields
-                    if name in ["Año", "Kilómetros"]:
-                        value = normalize_number(value)
-                    elif name == "Motor":
-                        # Divide Motor value by 10
-                        try:
-                            value = str(int(normalize_number(value)) / 10)
-                        except:
-                            pass
-                    
-                    specs[name] = value
-    except Exception as e:
-        print(f"⚠️ No se pudieron obtener las especificaciones adicionales: {e}")
-    
-    return specs
-
-def save_to_csv(car_data, filename, fieldnames=None):
-    """Save a single car's specifications to a CSV file."""
-    if not car_data:
-        return
-    
-    # Always use FIELD_PRIORITY as the base fieldnames
-    fieldnames = FIELD_PRIORITY
-    
-    # Check if file exists to determine if we need to write header
-    file_exists = os.path.exists(filename)
-    
-    # Ensure all fields from FIELD_PRIORITY are present in car_data
-    for field in fieldnames:
-        if field not in car_data:
-            car_data[field] = ""
-    
-    with open(filename, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(car_data)
+  except Exception as e:
+    print(f"❌ Error procesando carro {car['Enlace']}: {str(e)}")
+    return None
 
 def main():
-    input_file = sys.argv[1]
-    output_file = sys.argv[2]
+  if len(sys.argv) != 3:
+    print("Usage: python -m details.main <input_file> <output_file>")
+    return
     
-    # Read cars from the first stage output and get already processed URLs
-    cars, processed_urls = read_cars_from_csv(input_file, output_file)
+  input_file = sys.argv[1]
+  output_file = sys.argv[2]
+  
+  # Read and filter cars
+  cars, processed_urls = read_cars_from_csv(input_file, output_file)
+  cars = filter_processed_cars(cars, processed_urls)
+  
+  if not cars:
+    print("\n✅ No hay carros nuevos para procesar.")
+    return
+  
+  # Get config
+  config = get_scraping_config()
+  max_cars = config['max_pages']
+  min_wait = config['min_wait_time']
+  max_wait = config['max_wait_time']
+  
+  # Limit and shuffle cars
+  cars = cars[:max_cars]
+  random.shuffle(cars)
+  
+  print(f"\n🚗 Procesando {len(cars)} carros nuevos...")
+  
+  # Initialize browser
+  p, browser, context, page = create_browser_context()
+  load_time = random.randint(3, 6)
+  
+  try:
+    # Visit the last car in the list to initialize the structure
+    if len(cars) > 0:
+      load_page(page, cars[-1]['Enlace'], load_time)
+      time.sleep(5)  # Wait 5 seconds for the last car
     
-    # Filter out already processed cars
-    cars = [car for car in cars if car['Enlace'] not in processed_urls]
-    
-    if not cars:
-        print("\n✅ No hay carros nuevos para procesar.")
-        return
-    
-    # Randomly shuffle the list before processing
-    random.shuffle(cars)
-    
-    # Get config
-    config = get_scraping_config()
-    max_cars = config['max_pages']
-    min_wait = config['min_wait_time']
-    max_wait = config['max_wait_time']
-    user_agent = config['browser']['user_agent']
-    
-    # Limit the number of cars to process
-    MIN_LOAD_TIME = 3
-    MAX_LOAD_TIME = 6
-    cars = cars[:max_cars]
-    
-    print(f"\n🚗 Procesando {len(cars)} carros nuevos...")
-    
-    with sync_playwright() as p:
-        load_time = random.randint(MIN_LOAD_TIME, MAX_LOAD_TIME)
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context(user_agent=user_agent, locale="es-CO")
-        page = context.new_page()
-
-        # First visit the last car to initialize the structure
-        if len(cars) > 1:
-            last_car = cars[-1]
-            page.goto(last_car['Enlace'])
-            time.sleep(load_time)
-
-        # Process each car
-        for i, car in enumerate(cars, 1):
-            print(f"\n🔍 Procesando carro {i} de {len(cars)}: {car['Título']}")
-            print(f"📎 URL: {car['Enlace'].split('-_JM')[0]}")
-            
-            try:
-                page.goto(car['Enlace'])
-                time.sleep(load_time)
-                
-                # Get main image URL
-                main_image = get_main_image_url(page)
-                if main_image:
-                    print(f"🖼️ Imagen principal: {main_image}")
-                
-                # Extract specifications
-                specs = extract_specs(page)
-                
-                # Combine car info with specs, keeping basic info first
-                car_data = {
-                    # Basic info from first stage
-                    "Título": car["Título"],
-                    "Precio": car["Precio"],
-                    "Año": car["Año"],
-                    "Ubicación": car["Ubicación"],
-                    "Enlace": car["Enlace"],
-                    "ImagenURL": main_image,
-                    # Additional specs from second stage
-                    **specs
-                }
-                
-                # Save car data immediately
-                save_to_csv(car_data, output_file)
-                print("✅ Carro guardado exitosamente")
-                
-                # Print specifications
-                print("\n📋 Especificaciones:")
-                for name, value in specs.items():
-                    print(f"{name}: {value}")
-                
-                # Random delay between cars
-                if i < len(cars):  # Don't delay after the last car
-                    delay = random.randint(min_wait, max_wait)
-                    print(f"\n⏳ Esperando {delay} segundos...")
-                    time.sleep(delay)
-                    
-            except Exception as e:
-                print(f"❌ Error procesando carro {car['Enlace']}: {str(e)}")
-                continue
+    # Process each car in the original order
+    for i, car in enumerate(cars, 1):
+      load_page(page, car['Enlace'], load_time)
+      car_data = process_car(page, car, load_time)
+      
+      if car_data:
+        save_to_csv(car_data, output_file)
+        print("✅ Carro guardado exitosamente")
         
-        browser.close()
-        print(f"\n✅ Proceso completado. Datos guardados en {output_file}")
+        # Print specifications
+        print("\n📋 Especificaciones:")
+        for name, value in car_data.items():
+          if name not in ["Título", "Precio", "Año", "Ubicación", "Enlace", "ImagenURL"]:
+            print(f"{name}: {value}")
+      
+      # Random delay between cars
+      if i < len(cars):
+        delay = random.randint(min_wait, max_wait)
+        print(f"\n⏳ Esperando {delay} segundos...")
+        time.sleep(delay)
+        
+  finally:
+    browser.close()
+    p.stop()
+    
+  print(f"\n✅ Proceso completado. Datos guardados en {output_file}")
 
-if __name__ == "__main__": main() 
+if __name__ == "__main__":
+  main() 
