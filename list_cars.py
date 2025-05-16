@@ -1,8 +1,8 @@
 import sys
-from car_list.browser import setup_browser, close_browser
-from car_list.scraper import scrape_cars
-from car_list.data import load_existing_cars, process_results, save_results
-from car_list.url_builder import build_url
+from list_cars.browser import setup_browser, close_browser
+from list_cars.scraper import scrape_cars
+from list_cars.data import load_existing_cars, process_results, save_results
+from list_cars.url_builder import build_url
 from utils.config import get_scraping_config
 
 def main(append_mode=True):

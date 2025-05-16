@@ -1,4 +1,4 @@
-"""Constants for the car_list module."""
+"""Constants for the list_cars module."""
 
 # CSV Column names
 COLUMN_TITLE = "Título"
