@@ -20,9 +20,9 @@
       "min_year": null,
       "max_price": null,
 
-      "has_abs_brakes": true,
-      "has_air_conditioning": null,
-      "has_power_windows": null
+      "has_abs_brakes": null,
+      "has_power_windows": null,
+      "has_air_conditioning": null
     }
   }
 }

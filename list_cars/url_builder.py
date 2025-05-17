@@ -31,11 +31,11 @@ def build_url(options):
   if options.get("type", False):
     filters.append(options["type"])
 
-  if options.get("location", False): 
+  if options.get("location", False):
     filters.append(options["location"])
 
   url = f"{base_url}/{'/'.join(filters)}/"
-  
+
   if options.get("min_year", False):
     url += f"{URL_FILTER_YEAR_PREFIX}{options['min_year']}/"
 
@@ -44,4 +44,5 @@ def build_url(options):
 
   url += URL_FILTER_NO_INDEX
 
+  print(url)
   return url
