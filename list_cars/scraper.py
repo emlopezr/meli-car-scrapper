@@ -1,3 +1,4 @@
+import sys
 from models.car import Car
 from utils.config import get_scraping_config
 from .navigator import navigate_to_next_page
@@ -38,10 +39,11 @@ def scrape_cars(page, initial_url):
   config = get_scraping_config()
   new_cars = set()
   current_page = 1
+  max_pages = config.get('max_pages', sys.maxsize)
 
   page.goto(initial_url)
 
-  while current_page <= config['max_pages']:
+  while current_page <= max_pages:
     try:
       cars = scrape_page(page, current_page)
       new_cars.update(cars)

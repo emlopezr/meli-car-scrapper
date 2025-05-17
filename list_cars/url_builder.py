@@ -16,6 +16,9 @@ def build_url(options):
   if options.get("gear", False):
     filters.append(options["gear"])
 
+  if options.get("model", False):
+    filters.append(options["model"])
+
   if options.get("has_abs_brakes", False):
     filters.append(URL_FILTER_ABS_BRAKES)
 

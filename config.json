@@ -5,19 +5,24 @@
     "headless": false
   },
   "scraping": {
+    "base_url": "https://carros.mercadolibre.com.co",
+
     "max_pages": 10000,
     "min_wait_time": 10,
     "max_wait_time": 20,
-    "base_url": "https://carros.mercadolibre.com.co",
+
     "search_options": {
       "gear": "automatica",
-      "min_year": 2012,
-      "max_price": 65000000,
+      "model": "vitara",
+      "location": "antioquia",
+      "type": null,
+
+      "min_year": null,
+      "max_price": null,
+
       "has_abs_brakes": true,
       "has_air_conditioning": null,
-      "has_power_windows": null,
-      "type": null,
-      "location": null
+      "has_power_windows": null
     }
   }
 }
