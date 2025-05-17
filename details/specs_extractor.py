@@ -76,15 +76,6 @@ def extract_specs(page):
 
   return specs
 
-def normalize_spec_value(name, value):
-  """Normalize specification values based on field type."""
-  if name in ["Año", "Kilómetros", "Potencia"]:
-    return parse_numeric_string(value)
-  elif name == "Motor":
-    try: return str(int(parse_numeric_string(value)) / 10)
-    except: return value
-  return value
-
 def scroll_to_element(page, element):
   """Smooth scroll to an element."""
   page.evaluate("""(selector) => {

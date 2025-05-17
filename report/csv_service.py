@@ -5,12 +5,14 @@ from utils.constants import FIELD_PRIORITY
 def read_cars_from_csv(filename):
   """Read cars from the CSV file."""
   cars = []
+  original_headers = []
 
   with open(filename, mode="r", encoding="utf-8") as file:
     reader = csv.DictReader(file)
+    original_headers = reader.fieldnames
 
     for row in reader:
-      cars.append(Car(
+      car = Car(
         title=row.get('Título', ''),
         price=row.get('Precio', ''),
         year=row.get('Año', ''),
@@ -18,9 +20,12 @@ def read_cars_from_csv(filename):
         link=row.get('Link', ''),
         location=row.get('Ubicación', ''),
         engine=row.get('Motor', '')
-      ))
+      )
+      # Store all original data
+      car.original_data = row
+      cars.append(car)
 
-  return cars
+  return cars, original_headers
 
 def get_fieldnames(cars):
   """Get sorted fieldnames from cars data."""
@@ -32,13 +37,18 @@ def get_fieldnames(cars):
   remaining_fields = sorted(list(fieldnames - set(FIELD_PRIORITY)))
   return [field for field in FIELD_PRIORITY if field in fieldnames] + remaining_fields
 
-def save_to_csv(cars, filename):
-  """Save cars to CSV with sorted columns."""
+def save_to_csv(cars, filename, original_headers):
+  """Save cars to CSV preserving all original columns and adding score at the start."""
   if not cars: return
 
-  fieldnames = get_fieldnames(cars)
+  # Add score as the first column
+  fieldnames = ['score'] + list(original_headers)
 
   with open(filename, mode="w", newline="", encoding="utf-8") as file:
     writer = csv.DictWriter(file, fieldnames=fieldnames)
     writer.writeheader()
-    writer.writerows([car.__dict__ for car in cars]) 
+
+    for car in cars:
+      row_data = car.original_data.copy()
+      row_data['score'] = car.score
+      writer.writerow(row_data)

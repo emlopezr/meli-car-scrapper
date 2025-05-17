@@ -17,11 +17,11 @@ def main():
   input_file = sys.argv[1]
   output_file = sys.argv[2]
 
-  cars = read_cars_from_csv(input_file)
+  cars, original_headers = read_cars_from_csv(input_file)
   print(f"\n🚗 Procesando {len(cars)} carros...")
 
   process_cars(cars)
-  save_to_csv(cars, output_file)
+  save_to_csv(cars, output_file, original_headers)
   print(f"\n✅ Datos procesados y guardados en {output_file}")
 
 if __name__ == "__main__":

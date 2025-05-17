@@ -46,7 +46,7 @@ def main():
 
     for i, car in enumerate(cars, 1):
       load_page(page, car['Enlace'], load_time)
-      print(f"========== {i}/{len(cars)} ==========")
+      print(f"\n========== {i}/{len(cars)} ==========")
       car_data = process_car(page, car, load_time)
 
       if car_data:

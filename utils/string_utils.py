@@ -12,7 +12,8 @@ def parse_engine_size(engine_str: str) -> float:
   if not cleaned: raise ValueError("Invalid engine size")
 
   engine_float = float(cleaned)
-  if engine_float > 1000: engine_float /= 1000
-  if engine_float > 10: engine_float /= 100
+  if engine_float >= 1000: engine_float /= 1000
+  if engine_float >= 100: engine_float /= 100
+  if engine_float >= 10: engine_float /= 10
 
   return round(engine_float, 1)
