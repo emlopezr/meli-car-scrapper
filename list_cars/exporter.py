@@ -1,6 +1,6 @@
 import csv
 from models.car import Car
-from utils.string_utils import parse_price
+from utils.string_utils import parse_numeric_string
 from utils.constants import CSV_FIELDNAMES, COLUMN_TITLE, COLUMN_PRICE, COLUMN_LINK
 
 def read_existing_cars(filename):
@@ -14,7 +14,7 @@ def read_existing_cars(filename):
       for row in reader:
         car = Car(
           title=row[COLUMN_TITLE],
-          price=int(parse_price(row[COLUMN_PRICE])),
+          price=int(parse_numeric_string(row[COLUMN_PRICE])),
           link=row[COLUMN_LINK]
         )
 

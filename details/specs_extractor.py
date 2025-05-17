@@ -1,5 +1,5 @@
 import time
-from utils.string_utils import normalize_number
+from utils.string_utils import parse_numeric_string
 
 def extract_specs(page):
   """Extract detailed specifications from the car page."""
@@ -15,11 +15,11 @@ def extract_specs(page):
 
       # Normalize numbers for specific fields
       if name in ["Año", "Kilómetros"]:
-        value = normalize_number(value)
+        value = parse_numeric_string(value)
       elif name == "Motor":
         # Divide Motor value by 10
         try:
-          value = str(int(normalize_number(value)) / 10)
+          value = str(int(parse_numeric_string(value)) / 10)
         except:
           pass
 
@@ -66,11 +66,11 @@ def extract_specs(page):
           
           # Normalize numbers for specific fields
           if name in ["Año", "Kilómetros"]:
-            value = normalize_number(value)
+            value = parse_numeric_string(value)
           elif name == "Motor":
             # Divide Motor value by 10
             try:
-              value = str(int(normalize_number(value)) / 10)
+              value = str(int(parse_numeric_string(value)) / 10)
             except:
               pass
           
@@ -83,9 +83,9 @@ def extract_specs(page):
 def normalize_spec_value(name, value):
   """Normalize specification values based on field type."""
   if name in ["Año", "Kilómetros"]:
-    return normalize_number(value)
+    return parse_numeric_string(value)
   elif name == "Motor":
-    try: return str(int(normalize_number(value)) / 10)
+    try: return str(int(parse_numeric_string(value)) / 10)
     except: return value
   return value
 

@@ -1,6 +1,7 @@
 import sys
 from models.car import Car
 from utils.config import get_scraping_config
+from utils.string_utils import parse_numeric_string
 from .navigator import navigate_to_next_page
 
 def extract_car_data(item):
@@ -10,7 +11,7 @@ def extract_car_data(item):
     price_el = item.query_selector("span.andes-money-amount__fraction")
 
     title = title_el.inner_text().strip() if title_el else ""
-    price = price_el.inner_text().strip() if price_el else "0"
+    price = parse_numeric_string(price_el.inner_text().strip()) if price_el else 0
     link = title_el.get_attribute("href") if title_el else ""
 
     return Car(title, price, link)

@@ -1,5 +1,5 @@
 from models.car import Car
-from utils.string_utils import clean_numeric_string, parse_price, parse_engine_size
+from utils.string_utils import parse_numeric_string, parse_numeric_string, parse_engine_size
 from report.ranges import PRICE_RANGES, YEAR_RANGES, KILOMETER_RANGES, ENGINE_RANGES
 
 def calculate_range_score(value, ranges):
@@ -21,7 +21,7 @@ def calculate_year_score(car):
 def calculate_kilometer_score(car):
   """Calculate score based on car kilometers."""
   try:
-    km = int(clean_numeric_string(car.km))
+    km = int(parse_numeric_string(car.km))
     return calculate_range_score(km, KILOMETER_RANGES)
   except (ValueError, TypeError):
     return 0
@@ -39,7 +39,7 @@ def calculate_engine_score(car):
 def calculate_price_score(car):
   """Calculate score based on car price."""
   try:
-    price = parse_price(car.price)
+    price = parse_numeric_string(car.price)
     return calculate_range_score(price, PRICE_RANGES)
   except (ValueError, TypeError):
     return 0
