@@ -13,18 +13,16 @@ PRICE_RANGES: List[PriceRange] = [
 ]
 
 YEAR_RANGES: List[YearRange] = [
-  YearRange(2023, INF,  +5),
-  YearRange(2021, 2022, +4),
-  YearRange(2019, 2020, +2),
-  YearRange(2017, 2018, +1),
+  YearRange(2023, INF,  +2),
+  YearRange(2021, 2022, +1),
 ]
 
 KILOMETER_RANGES: List[KilometerRange] = [
-  KilometerRange(0,       40_000,   +4),
-  KilometerRange(40_000,  70_000,   +2),
+  KilometerRange(0,       40_000,   +2),
+  KilometerRange(40_000,  70_000,   +1),
   KilometerRange(70_000,  90_000,   +0),
   KilometerRange(90_000,  110_000,  -1),
-  KilometerRange(110_000, 130_000, -4),
+  KilometerRange(110_000, 130_000,  -3),
 ]
 
 KM_PER_YEAR_RANGES: List[KmPerYearRange] = [
