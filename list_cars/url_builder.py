@@ -35,8 +35,13 @@ def build_url(options):
     filters.append(options["location"])
 
   url = f"{base_url}/{'/'.join(filters)}/"
-  url += f"{URL_FILTER_YEAR_PREFIX}{options['min_year']}/" 
-  url += f"{URL_FILTER_PRICE_RANGE}{options['max_price']}"
+  
+  if options.get("min_year", False):
+    url += f"{URL_FILTER_YEAR_PREFIX}{options['min_year']}/"
+
+  if options.get("max_price", False):
+    url += f"{URL_FILTER_PRICE_RANGE}{options['max_price']}"
+
   url += URL_FILTER_NO_INDEX
 
   return url

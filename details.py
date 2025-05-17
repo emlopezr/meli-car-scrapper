@@ -28,7 +28,7 @@ def main():
     return
 
   config = get_scraping_config()
-  max_cars = config['max_pages']
+  max_cars = config.get('max_pages', sys.maxsize)
   min_wait = config['min_wait_time']
   max_wait = config['max_wait_time']
 
@@ -46,6 +46,7 @@ def main():
 
     for i, car in enumerate(cars, 1):
       load_page(page, car['Enlace'], load_time)
+      print(f"========== {i}/{len(cars)} ==========")
       car_data = process_car(page, car, load_time)
 
       if car_data:
