@@ -1,6 +1,6 @@
 from models.car import Car
 from utils.string_utils import parse_numeric_string, parse_engine_size
-from report.ranges import PRICE_RANGES, YEAR_RANGES, KILOMETER_RANGES, ENGINE_RANGES
+from report.ranges import *
 
 def calculate_range_score(value, ranges):
   """Calculate score based on value ranges."""
@@ -17,14 +17,23 @@ def calculate_year_score(car):
     return calculate_range_score(year, YEAR_RANGES)
   except (ValueError, TypeError):
     return 0
+from datetime import datetime
 
 def calculate_kilometer_score(car):
-  """Calculate score based on car kilometers."""
+  """Calculate score based on kilometers per year."""
   try:
     km = int(parse_numeric_string(car.km))
-    return calculate_range_score(km, KILOMETER_RANGES)
-  except (ValueError, TypeError):
-    return 0
+    year = int(car.year)
+
+    current_year = datetime.now().year
+    years_of_use = max(current_year - year, 1)
+
+    km_per_year = km / years_of_use
+
+    return calculate_range_score(km_per_year, KM_PER_YEAR_RANGES)
+  except (ValueError, TypeError, ZeroDivisionError):
+      return 0
+
 
 def calculate_engine_score(car):
   """Calculate score based on engine size."""

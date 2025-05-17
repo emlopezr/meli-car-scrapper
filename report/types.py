@@ -11,3 +11,4 @@ class PriceRange(CarScore): pass
 class YearRange(CarScore): pass
 class KilometerRange(CarScore): pass
 class EngineRange(CarScore): pass
+class KmPerYearRange(CarScore): pass

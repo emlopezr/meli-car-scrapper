@@ -42,7 +42,7 @@ def save_to_csv(cars, filename, original_headers):
   if not cars: return
 
   # Add score as the first column
-  fieldnames = ['score'] + list(original_headers)
+  fieldnames = ['Score'] + list(original_headers)
 
   with open(filename, mode="w", newline="", encoding="utf-8") as file:
     writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -50,5 +50,5 @@ def save_to_csv(cars, filename, original_headers):
 
     for car in cars:
       row_data = car.original_data.copy()
-      row_data['score'] = car.score
+      row_data['Score'] = car.score
       writer.writerow(row_data)
