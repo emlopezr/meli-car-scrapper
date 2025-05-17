@@ -1,5 +1,5 @@
 from models.car import Car
-from utils.string_utils import parse_numeric_string, parse_numeric_string, parse_engine_size
+from utils.string_utils import parse_numeric_string, parse_engine_size
 from report.ranges import PRICE_RANGES, YEAR_RANGES, KILOMETER_RANGES, ENGINE_RANGES
 
 def calculate_range_score(value, ranges):

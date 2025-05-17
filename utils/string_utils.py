@@ -1,19 +1,7 @@
-def parse_numeric_string(value: str, allow_decimal: bool = True, handle_currency: bool = False) -> float:
-  if not value: return 0.0
-
-  # Handle currency cases
-  if handle_currency:
-    value = value.replace('$', '').strip().lower()
-    if 'm' in value: return float(value.replace('m', '')) * 1_000_000
-
-  # Remove commas and spaces
-  value = value.replace(',', '').replace(' ', '')
-
-  # Filter characters based on allow_decimal
-  if allow_decimal: value = ''.join(c for c in value if c.isdigit() or c == '.')
-  else: value = ''.join(c for c in value if c.isdigit())
-
-  return float(value) if value else 0.0
+def parse_numeric_string(value: str) -> int:
+  """Extract all numeric characters from a string and convert to integer."""
+  if not value: return 0
+  return int(''.join(c for c in value if c.isdigit()))
 
 def parse_engine_size(engine_str: str) -> float:
   """Parse engine size string to float value."""

@@ -14,17 +14,15 @@ def extract_specs(page):
       value = row.locator(".andes-table__column--value").inner_text()
 
       # Normalize numbers for specific fields
-      if name in ["Año", "Kilómetros"]:
+      if name in ["Año", "Kilómetros", "Potencia"]:
         value = parse_numeric_string(value)
       elif name == "Motor":
         # Divide Motor value by 10
-        try:
-          value = str(int(parse_numeric_string(value)) / 10)
-        except:
-          pass
+        try: value = str(int(parse_numeric_string(value)) / 10)
+        except: pass
 
       specs[name] = value
- 
+
   # Try to click the expand button to get more specs
   try:
     expand_button = page.locator("#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
@@ -39,9 +37,9 @@ def extract_specs(page):
           });
         }
       }""", "#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
-      
+
       time.sleep(2)  # Wait for smooth scroll to complete
-      
+
       # Try clicking with JavaScript as a fallback
       try:
         expand_button.click()
@@ -50,12 +48,12 @@ def extract_specs(page):
           const button = document.querySelector(selector);
           if (button) button.click();
         }""", "#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > button")
-      
+
       time.sleep(2)  # Wait for the expanded content
-      
+
       # Get all specification tables
       tables_container = page.locator("#highlighted_specs_attrs > div.ui-pdp-container__row.ui-pdp-container__row--technical-specifications > div > div > div")
-      
+
       # Iterate through all tables
       tables = tables_container.locator("div > div > table").all()
       for table in tables:
@@ -63,26 +61,24 @@ def extract_specs(page):
         for row in rows:
           name = row.locator(".andes-table__header__container").inner_text()
           value = row.locator(".andes-table__column--value").inner_text()
-          
+
           # Normalize numbers for specific fields
           if name in ["Año", "Kilómetros"]:
             value = parse_numeric_string(value)
           elif name == "Motor":
             # Divide Motor value by 10
-            try:
-              value = str(int(parse_numeric_string(value)) / 10)
-            except:
-              pass
-          
+            try: value = str(int(parse_numeric_string(value)) / 10)
+            except: pass
+
           specs[name] = value
   except Exception as e:
     print(f"⚠️ No se pudieron obtener las especificaciones adicionales: {e}")
-  
+
   return specs
 
 def normalize_spec_value(name, value):
   """Normalize specification values based on field type."""
-  if name in ["Año", "Kilómetros"]:
+  if name in ["Año", "Kilómetros", "Potencia"]:
     return parse_numeric_string(value)
   elif name == "Motor":
     try: return str(int(parse_numeric_string(value)) / 10)

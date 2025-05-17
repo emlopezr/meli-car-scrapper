@@ -1,7 +1,5 @@
 import os
 from .exporter import read_existing_cars, save_to_csv
-from models.car import Car
-from utils.string_utils import parse_numeric_string
 
 def load_existing_cars(output_file, append_mode):
   """Load existing cars if in append mode."""
