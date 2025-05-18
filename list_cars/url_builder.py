@@ -16,6 +16,9 @@ def build_url(options):
   if options.get("gear", False):
     filters.append(options["gear"])
 
+  if options.get("brand", False):
+    filters.append(options["brand"])
+
   if options.get("model", False):
     filters.append(options["model"])
 

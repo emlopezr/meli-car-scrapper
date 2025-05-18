@@ -13,6 +13,7 @@
 
     "search_options": {
       "gear": "automatica",
+      "brand": "suzuki",
       "model": "vitara",
       "location": "antioquia",
       "type": null,

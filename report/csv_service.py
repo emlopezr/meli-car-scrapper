@@ -42,7 +42,8 @@ def save_to_csv(cars, filename, original_headers):
   if not cars: return
 
   # Add score as the first column
-  fieldnames = ['Score'] + list(original_headers)
+  if 'Score' not in original_headers: fieldnames = ['Score'] + list(original_headers)
+  else: fieldnames = list(original_headers)
 
   with open(filename, mode="w", newline="", encoding="utf-8") as file:
     writer = csv.DictWriter(file, fieldnames=fieldnames)

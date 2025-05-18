@@ -1,9 +1,29 @@
 import time
 from utils.string_utils import parse_numeric_string
 
+def extract_location(page):
+    """Extract the car's location from the seller profile section."""
+    try:
+        # Find the location element using the specific selector
+        location_div = page.locator("#seller_profile > ul > div").filter(
+            has=page.locator("h3", has_text="Ubicación del vehículo")
+        )
+        
+        if location_div.is_visible():
+            location = location_div.locator("p").inner_text()
+            return location
+    except Exception as e:
+        print(f"⚠️ Error getting location: {e}")
+    
+    return ""
+
 def extract_specs(page):
   """Extract detailed specifications from the car page."""
   specs = {}
+
+  # Get location first
+  specs["Ubicación"] = extract_location(page)
+  print(specs["Ubicación"])
 
   # First get the main specifications table
   main_table = page.locator("#technical_specifications .ui-pdp-specs__table")
